@@ -1,0 +1,10 @@
+How to install the iterm theme :
+
+if iterm2 is correctly installed: double-click on the file with the extension .itermcolors 
+iterm should automatically recognize the file and import it. 
+
+or 
+
+CMD i > colors > colors presets > import > download > colorterm > colorterm.itermcolors
+
+and voilà! the theme should be available in your presets

@@ -1,0 +1,20 @@
+if you haven't already done so, create a warp folder in the root directory 
+
+# Create invisible warp folder
+mkdir .warp
+
+# Move to warp folder
+cd .warp
+
+# Create themes subdirectory
+mkdir themes
+
+# Move to themes directory
+cd themes
+
+or 
+mkdir -p .warp/themes
+then 
+mv ~/Downloads/colorterm .
+
+for more information, visit the official website: https://docs.warp.dev/appearance/themess://docs.warp.dev/appearance/themes
