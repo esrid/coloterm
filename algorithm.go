@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"text/template"
@@ -160,7 +159,7 @@ func (i *Iterm) Convert(c Colors) error {
 }
 
 func (i *Iterm) Draw(buffer io.Writer, path string) error {
-	tmpl, err := template.New("custom").Funcs(template.FuncMap{"decimalize": i.Decimalize}).ParseFiles(path)
+	tmpl, err := template.New("custom").Funcs(template.FuncMap{"decimalize": i.Decimalize}).ParseFS(tpl, path)
 	if err != nil {
 		return fmt.Errorf("error parsing template file: %v", err)
 	}
@@ -182,14 +181,15 @@ func (i *Iterm) SendZip(data Colors, w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 	var xmlBuf bytes.Buffer
-	if err := i.Draw(&xmlBuf, "./template/itermTemplate.xml"); err != nil {
-
+	if err := i.Draw(&xmlBuf, "template/itermTemplate.xml"); err != nil {
+		fmt.Println("parse file error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return fmt.Errorf("failed to create XML content: %v", err)
 	}
 
-	b, err := os.ReadFile("./template/InstallIterm.txt")
+	b, err := tpl.ReadFile("template/InstallIterm.txt")
 	if err != nil {
+		fmt.Println("read file error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return err
 	}
@@ -250,7 +250,7 @@ func (wa *Warp) Convert(c Colors) error {
 }
 
 func (wa *Warp) Draw(buffer io.Writer, path string) error {
-	tmpl, err := template.New("custom").ParseFiles(path)
+	tmpl, err := template.New("custom").ParseFS(tpl, path)
 	if err != nil {
 		return fmt.Errorf("error parsing template file: %v", err)
 	}
@@ -274,15 +274,16 @@ func (wa *Warp) SendZip(data Colors, w http.ResponseWriter, r *http.Request) err
 	}
 
 	var yamlbuf bytes.Buffer
-	if err := wa.Draw(&yamlbuf, "./template/warpTemplate.yaml"); err != nil {
+	if err := wa.Draw(&yamlbuf, "template/warpTemplate.yaml"); err != nil {
 		http.Error(w, "Failed to create YAML content", http.StatusInternalServerError)
 		fmt.Println("Error creating XML content:", err)
 		return err
 	}
 
-	b, err := os.ReadFile("./template/InstallWarp.txt")
+	b, err := tpl.ReadFile("template/InstallWarp.txt")
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		fmt.Println("read file error", err)
 		return err
 	}
 	z1 := ZipConfig{
@@ -305,6 +306,7 @@ func (wa *Warp) SendZip(data Colors, w http.ResponseWriter, r *http.Request) err
 
 	if _, err := z.WriteTo(w); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		fmt.Println("write to w error", err)
 		return fmt.Errorf("failed to write ZIP archive to response: %v", err)
 	}
 

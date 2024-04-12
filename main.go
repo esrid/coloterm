@@ -1,15 +1,30 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
 	"time"
 )
 
+//go:embed all:dist
+var static embed.FS
+
+func Assets() (fs.FS, error) {
+	return fs.Sub(static, "dist/assets")
+}
+
+var assets, _ = Assets()
+
+//go:embed template/*
+var tpl embed.FS
+
 func main() {
+
 	router := Routing()
 	server := http.Server{
 		Addr:              ":9101",
@@ -26,7 +41,7 @@ func main() {
 
 func Routing() *http.ServeMux {
 	router := http.NewServeMux()
-	router.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("./dist/assets/"))))
+	router.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.FS(assets))))
 	router.HandleFunc("GET /home", GetHome)
 	router.HandleFunc("POST /generate", PostGenerate)
 
@@ -34,7 +49,7 @@ func Routing() *http.ServeMux {
 }
 
 func GetHome(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./dist/index.html")
+	t, err := template.ParseFS(static, "dist/index.html")
 	if err != nil {
 		fmt.Printf("%s", err)
 		return
