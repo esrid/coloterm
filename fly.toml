@@ -1,10 +1,10 @@
-# fly.toml app configuration file generated for coloterm on 2024-04-11T19:53:25-04:00
+# fly.toml app configuration file generated for coloterm on 2024-04-12T15:33:23-04:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'coloterm'
-primary_region = 'ewr'
+primary_region = 'iad'
 
 [build]
 

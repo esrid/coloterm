@@ -8,7 +8,10 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/go-chi/chi"
 )
 
 //go:embed all:dist
@@ -24,26 +27,30 @@ var assets, _ = Assets()
 var tpl embed.FS
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
 	router := Routing()
 	server := http.Server{
-		Addr:              ":9101",
+		Addr:              fmt.Sprintf(":%s", port),
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
 		ReadHeaderTimeout: 2 * time.Second,
 		Handler:           router,
 	}
-	fmt.Println("http://localhost:9101/home")
+	fmt.Println()
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func Routing() *http.ServeMux {
-	router := http.NewServeMux()
+func Routing() *chi.Mux {
+	router := chi.NewRouter()
 	router.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.FS(assets))))
-	router.HandleFunc("GET /home", GetHome)
-	router.HandleFunc("POST /generate", PostGenerate)
+	router.Get("/", GetHome)
+	router.Post("/generate", PostGenerate)
 
 	return router
 }
