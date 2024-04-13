@@ -23,7 +23,6 @@ Coloris({
  */
 // ALL THE CONSTANT
 const maxHue = 360;
-const defaultRotation = -0.35;
 const defaultGama = 0.7;
 const defaultLightness = [0.3, 0.8];
 const defaultColorNumber = 5;
@@ -40,7 +39,7 @@ const CubeHelix = () => {
     .lightness(defaultLightness)
     .scale()
     .correctLightness()
-    .colors(5);
+    .colors(defaultColorNumber);
 
   // Convertir les couleurs en format RGBA avec template literals
   let rgbaColors = colors.map((color) => chroma(color).rgba());

@@ -29,7 +29,7 @@ var tpl embed.FS
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "80"
 	}
 
 	router := Routing()
@@ -40,7 +40,6 @@ func main() {
 		ReadHeaderTimeout: 2 * time.Second,
 		Handler:           router,
 	}
-	fmt.Println()
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalln(err)
 	}
