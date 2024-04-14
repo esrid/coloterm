@@ -30,34 +30,62 @@ const defaultColorNumber = 5;
 
 // MANIPULATE COLOR FUNCTION END
 const CubeHelix = () => {
-  let random = Math.floor(Math.random() * maxHue);
-  let colors = chroma
-    .cubehelix()
-    .start(random)
-    .rotations(((Math.random() - 0.5) * 2).toFixed(2))
-    .gamma(defaultGama)
-    .lightness(defaultLightness)
-    .scale()
-    .correctLightness()
-    .colors(defaultColorNumber);
+  const MIN_CONTRAST_RATIO = 5.5; // Minimum acceptable contrast ratio
 
-  // Convertir les couleurs en format RGBA avec template literals
+  let random = Math.floor(Math.random() * maxHue);
+  let background = chroma.random(); // Generate a random background color
+
+  let colors = [];
+  let attempts = 0;
+  while (colors.length < defaultColorNumber && attempts < 100) {
+    let color = chroma
+      .cubehelix()
+      .start(random)
+      .rotations(((Math.random() - 0.5) * 2).toFixed(2))
+      .gamma(defaultGama)
+      .lightness(defaultLightness)
+      .scale()
+      .correctLightness()
+      .colors(1)[0];
+
+    // Check the contrast ratio between the color and the background
+    let contrastRatio = chroma.contrast(color, background);
+    if (contrastRatio >= MIN_CONTRAST_RATIO) {
+      colors.push(color);
+      attempts = 0; // Reset the attempts counter if a color is added
+    } else {
+      attempts++;
+    }
+  }
+
+  // Convert the colors to RGBA format
   let rgbaColors = colors.map((color) => chroma(color).rgba());
   return rgbaColors;
 };
-
 /**
  * @returns {number[][]}
  */
 const RandomColor = () => {
-  /**
-   * @type {number[]}
-   */
-  let RGBA = [];
-  for (let i = 0; i < 5; i++) {
-    RGBA.push(chroma.random().rgba());
+  const MIN_CONTRAST_RATIO = 4.5; // Minimum acceptable contrast ratio
+
+  let background = chroma.random(); // Generate a random background color
+  let colors = [];
+
+  let attempts = 0;
+  while (colors.length < 5 && attempts < 100) {
+    let color = chroma.random().rgba();
+
+    // Check the contrast ratio between the color and the background
+    let contrastRatio = chroma.contrast(color, background);
+    if (contrastRatio >= MIN_CONTRAST_RATIO) {
+      colors.push(color);
+      attempts = 0; // Reset the attempts counter if a color is added
+    } else {
+      attempts++;
+    }
   }
-  return RGBA;
+
+  return colors;
 };
 
 // MANIPULATE COLOR FUNCTION END
