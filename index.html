@@ -16,7 +16,7 @@
   <title>colorterm</title>
 </head>
 
-<body>
+<body class="h-screen w-screen">
   <div class="bg-yellow-400 px-4 text-black">
     <p class="text-center text-sm font-bold">Beta version</p>
   </div>
@@ -25,8 +25,8 @@
       <span class="font-bold">colorterm</span>
     </nav>
   </header>
-  <section @keydown.space="run" class="bg-yellow-50 flex justify-center flex-col-reverse px-4" id="container-app"
-    x-data="app">
+  <section @keydown.space="run" class="h-screen w-screen bg-yellow-50 flex justify-center flex-col-reverse px-4"
+    id="container-app" x-data="app">
     <div
       class="border-2 border-black bg-yellow-50 flex justify-around items-center max-w-7xl p-3 rounded-md gap-3 shadow-lg m-auto"
       id="container-bottom">
@@ -66,7 +66,6 @@
       </div>
     </div>
     <div class="flex-1 left-1/2 flex justify-center items-center">
-
       <svg width="600" height="600" viewBox="0 0 420 253" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_7_2)">
           <rect x="2" y="1" width="416" height="249" rx="7" :fill="colorMapCssRgba.background" />

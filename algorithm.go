@@ -3,7 +3,6 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -52,12 +51,10 @@ type Alacritty struct {
 }
 
 type HyperJs struct {
-	t            *template.Template
-	Foreground   []float64
-	Background   []float64
-	Link         []float64
-	Selected     []float64
-	SelectedText []float64
+	t          *template.Template
+	Foreground []float64
+	Background []float64
+	Selected   []float64
 }
 
 type Warp struct {
@@ -161,15 +158,15 @@ func (i *Iterm) Convert(c Colors) error {
 func (i *Iterm) Draw(buffer io.Writer, path string) error {
 	tmpl, err := template.New("custom").Funcs(template.FuncMap{"decimalize": i.Decimalize}).ParseFS(tpl, path)
 	if err != nil {
-		return fmt.Errorf("error parsing template file: %v", err)
+		return err
 	}
 
 	if tmpl.Lookup("custom") == nil {
-		return errors.New("template 'custom' not found in the parsed files")
+		return err
 	}
 
 	if err := tmpl.ExecuteTemplate(buffer, "custom", i); err != nil {
-		return fmt.Errorf("error executing template: %v", err)
+		return err
 	}
 
 	return nil
@@ -177,20 +174,15 @@ func (i *Iterm) Draw(buffer io.Writer, path string) error {
 
 func (i *Iterm) SendZip(data Colors, w http.ResponseWriter, r *http.Request) error {
 	if err := i.Convert(data); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return err
 	}
 	var xmlBuf bytes.Buffer
 	if err := i.Draw(&xmlBuf, "template/itermTemplate.xml"); err != nil {
-		fmt.Println("parse file error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return fmt.Errorf("failed to create XML content: %v", err)
+		return err
 	}
 
 	b, err := tpl.ReadFile("template/InstallIterm.txt")
 	if err != nil {
-		fmt.Println("read file error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return err
 	}
 	z1 := ZipConfig{
@@ -203,17 +195,14 @@ func (i *Iterm) SendZip(data Colors, w http.ResponseWriter, r *http.Request) err
 	}
 	z, err := Zip(z1, z2)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return err
 	}
 
 	w.Header().Set("Content-Disposition", "attachment; filename=colorterm.zip")
 	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Length", strconv.Itoa(z.Len()))
-
 	if _, err := z.WriteTo(w); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return fmt.Errorf("failed to write ZIP archive to response: %v", err)
+		return err
 	}
 
 	return nil
@@ -252,15 +241,15 @@ func (wa *Warp) Convert(c Colors) error {
 func (wa *Warp) Draw(buffer io.Writer, path string) error {
 	tmpl, err := template.New("custom").ParseFS(tpl, path)
 	if err != nil {
-		return fmt.Errorf("error parsing template file: %v", err)
+		return err
 	}
 
 	if tmpl.Lookup("custom") == nil {
-		return errors.New("template 'custom' not found in the parsed files")
+		return err
 	}
 
 	if err := tmpl.ExecuteTemplate(buffer, "custom", wa); err != nil {
-		return fmt.Errorf("error executing template: %v", err)
+		return err
 	}
 
 	return nil
@@ -268,22 +257,16 @@ func (wa *Warp) Draw(buffer io.Writer, path string) error {
 
 func (wa *Warp) SendZip(data Colors, w http.ResponseWriter, r *http.Request) error {
 	if err := wa.Convert(data); err != nil {
-		http.Error(w, "Failed to convert data", http.StatusInternalServerError)
-		fmt.Println("Error converting data to YAML:", err)
 		return err
 	}
 
 	var yamlbuf bytes.Buffer
 	if err := wa.Draw(&yamlbuf, "template/warpTemplate.yaml"); err != nil {
-		http.Error(w, "Failed to create YAML content", http.StatusInternalServerError)
-		fmt.Println("Error creating XML content:", err)
 		return err
 	}
 
 	b, err := tpl.ReadFile("template/InstallWarp.txt")
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		fmt.Println("read file error", err)
 		return err
 	}
 	z1 := ZipConfig{
@@ -296,7 +279,6 @@ func (wa *Warp) SendZip(data Colors, w http.ResponseWriter, r *http.Request) err
 	}
 	z, err := Zip(z1, z2)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return err
 	}
 
@@ -305,26 +287,43 @@ func (wa *Warp) SendZip(data Colors, w http.ResponseWriter, r *http.Request) err
 	w.Header().Set("Content-Length", strconv.Itoa(z.Len()))
 
 	if _, err := z.WriteTo(w); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		fmt.Println("write to w error", err)
-		return fmt.Errorf("failed to write ZIP archive to response: %v", err)
+		return err
 	}
 
 	return nil
 }
 
-func SwitchMode(t string, c Colors, w http.ResponseWriter, r *http.Request) {
+func (h *HyperJs) Convert(c Colors) error {
+	var err error
+	h.Foreground, err = ExtractRGBA(c.Foreground)
+	if err != nil {
+		return err
+	}
+	h.Background, err = ExtractRGBA(c.Background)
+	if err != nil {
+		return err
+	}
+	h.Selected, err = ExtractRGBA(c.Selected)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SwitchMode(t string, c Colors, w http.ResponseWriter, r *http.Request) error {
 	switch t {
 	case "iterm":
 		var iterm Iterm
 		if err := iterm.SendZip(c, w, r); err != nil {
-			return
+			return err
 		}
 	case "warp":
 		var warp Warp
 		if err := warp.SendZip(c, w, r); err != nil {
-			return
+			return err
 		}
-
+	case "hyper":
+		fmt.Println("hellp")
 	}
+	return nil
 }

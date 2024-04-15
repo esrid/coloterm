@@ -30,62 +30,42 @@ const defaultColorNumber = 5;
 
 // MANIPULATE COLOR FUNCTION END
 const CubeHelix = () => {
-  const MIN_CONTRAST_RATIO = 5.5; // Minimum acceptable contrast ratio
-
   let random = Math.floor(Math.random() * maxHue);
-  let background = chroma.random(); // Generate a random background color
+  let colors = chroma
+    .cubehelix()
+    .start(random)
+    .rotations(((Math.random() - 0.5) * 2).toFixed(2))
+    .gamma(defaultGama)
+    .lightness(defaultLightness)
+    .scale()
+    .correctLightness()
+    .colors(defaultColorNumber);
 
-  let colors = [];
-  let attempts = 0;
-  while (colors.length < defaultColorNumber && attempts < 100) {
-    let color = chroma
-      .cubehelix()
-      .start(random)
-      .rotations(((Math.random() - 0.5) * 2).toFixed(2))
-      .gamma(defaultGama)
-      .lightness(defaultLightness)
-      .scale()
-      .correctLightness()
-      .colors(1)[0];
-
-    // Check the contrast ratio between the color and the background
-    let contrastRatio = chroma.contrast(color, background);
-    if (contrastRatio >= MIN_CONTRAST_RATIO) {
-      colors.push(color);
-      attempts = 0; // Reset the attempts counter if a color is added
-    } else {
-      attempts++;
-    }
-  }
-
-  // Convert the colors to RGBA format
+  // Convertir les couleurs en format RGBA avec template literals
   let rgbaColors = colors.map((color) => chroma(color).rgba());
   return rgbaColors;
 };
+
 /**
+ * @param {string[]} array
  * @returns {number[][]}
  */
-const RandomColor = () => {
-  const MIN_CONTRAST_RATIO = 4.5; // Minimum acceptable contrast ratio
-
-  let background = chroma.random(); // Generate a random background color
-  let colors = [];
-
-  let attempts = 0;
-  while (colors.length < 5 && attempts < 100) {
-    let color = chroma.random().rgba();
-
-    // Check the contrast ratio between the color and the background
-    let contrastRatio = chroma.contrast(color, background);
-    if (contrastRatio >= MIN_CONTRAST_RATIO) {
-      colors.push(color);
-      attempts = 0; // Reset the attempts counter if a color is added
-    } else {
-      attempts++;
-    }
+const RandomColor = (colors = [], MIN_CONTRAST_RATIO = 4.5) => {
+  if (colors.length === 5) {
+    return colors.map((color) => chroma(color).rgba());
   }
 
-  return colors;
+  const current = chroma.random();
+
+  const Valid =
+    colors.length === 0 ||
+    chroma.contrast(current, colors[0]) >= MIN_CONTRAST_RATIO;
+
+  if (Valid) {
+    colors.push(current);
+  }
+
+  return RandomColor(colors, MIN_CONTRAST_RATIO);
 };
 
 // MANIPULATE COLOR FUNCTION END
@@ -119,8 +99,8 @@ export function colorTerm() {
      */
     get colorsMap() {
       return {
-        foreground: this.colors[0],
-        background: this.colors[1],
+        background: this.colors[0],
+        foreground: this.colors[1],
         link: this.colors[2],
         selected: this.colors[3],
         selectedText: this.colors[4],
@@ -137,8 +117,8 @@ export function colorTerm() {
       const rgbaToString = (rgbaArray) =>
         `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]}, ${rgbaArray[3]})`;
       return {
-        foreground: rgbaToString(this.colors[0]),
-        background: rgbaToString(this.colors[1]),
+        background: rgbaToString(this.colors[0]),
+        foreground: rgbaToString(this.colors[1]),
         link: rgbaToString(this.colors[2]),
         selected: rgbaToString(this.colors[3]),
         selectedText: rgbaToString(this.colors[4]),
@@ -205,12 +185,11 @@ export function colorTerm() {
       };
       const { blob, filename } = await fetch("/generate", {
         method: "POST",
+        credentials: "omit",
+        cache: "no-cache",
         headers: {
           "Content-Type": "application/json",
         },
-        mode: "no-cors",
-        credentials: "omit",
-        cache: "no-cache",
         body: JSON.stringify(data),
       }).then(async (res) => {
         const blob = await res.blob();

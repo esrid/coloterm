@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 
 //go:embed all:dist
@@ -46,32 +47,47 @@ func main() {
 }
 
 func Routing() *chi.Mux {
-	router := chi.NewRouter()
-	router.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.FS(assets))))
-	router.Get("/", GetHome)
-	router.Post("/generate", PostGenerate)
+	r := chi.NewRouter()
+	r.Use(middleware.AllowContentType("application/json"))
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.CleanPath)
+	r.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.FS(assets))))
+	r.Get("/", HandlerError(GetHome))
+	r.Post("/generate", HandlerError(PostGenerate))
 
-	return router
+	return r
 }
 
-func GetHome(w http.ResponseWriter, r *http.Request) {
+func GetHome(w http.ResponseWriter, r *http.Request) error {
 	t, err := template.ParseFS(static, "dist/index.html")
 	if err != nil {
-		fmt.Printf("%s", err)
-		return
+		return err
 	}
 	if err := t.Execute(w, nil); err != nil {
-		fmt.Printf("%s", err)
-		return
+		return err
 	}
+	return nil
 }
 
-func PostGenerate(w http.ResponseWriter, r *http.Request) {
+func PostGenerate(w http.ResponseWriter, r *http.Request) error {
 	var data ApiCall
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		http.Error(w, "Failed to decode request body", http.StatusInternalServerError)
-		fmt.Println("Error decoding request body:", err)
-		return
+		return err
 	}
-	SwitchMode(data.GenerateMode, data.Colors, w, r)
+	if err := SwitchMode(data.GenerateMode, data.Colors, w, r); err != nil {
+		return err
+	}
+	return nil
+}
+
+type ErrorHTTP func(w http.ResponseWriter, r *http.Request) error
+
+func HandlerError(next ErrorHTTP) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := next(w, r); err != nil {
+			http.Error(w, "Internal server Error", http.StatusInternalServerError)
+			return
+		}
+	}
 }
