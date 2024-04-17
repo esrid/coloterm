@@ -1,3 +1,8 @@
-foregroundColor : {{ .Foreground }}
-backgroundColor : {{.Background}}
-selectionColor : {{.Selected}}
+{{define "custom"}}
+
+foregroundColor : '{{ .Foreground }}',
+backgroundColor : '{{.Background}}',
+selectionColor : '{{.Selected}}',
+borderColor : '{{.Background }}',
+
+{{end}}

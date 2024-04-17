@@ -52,9 +52,10 @@ type Alacritty struct {
 
 type HyperJs struct {
 	t          *template.Template
-	Foreground []float64
-	Background []float64
-	Selected   []float64
+	Foreground string
+	Background string
+	Selected   string
+	Border     string
 }
 
 type Warp struct {
@@ -293,20 +294,62 @@ func (wa *Warp) SendZip(data Colors, w http.ResponseWriter, r *http.Request) err
 	return nil
 }
 
-func (h *HyperJs) Convert(c Colors) error {
-	var err error
-	h.Foreground, err = ExtractRGBA(c.Foreground)
+func (h *HyperJs) Convert(c Colors) {
+	h.Foreground = c.Foreground
+	h.Background = c.Background
+	h.Border = c.Background
+	h.Selected = c.Selected
+}
+
+func (h *HyperJs) Draw(buffer io.Writer, path string) error {
+	tmpl, err := template.New("custom").ParseFS(tpl, path)
 	if err != nil {
 		return err
 	}
-	h.Background, err = ExtractRGBA(c.Background)
+
+	if tmpl.Lookup("custom") == nil {
+		return err
+	}
+
+	if err := tmpl.ExecuteTemplate(buffer, "custom", h); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *HyperJs) SendZip(data Colors, w http.ResponseWriter, r *http.Request) error {
+	h.Convert(data)
+	var yamlbuf bytes.Buffer
+	if err := h.Draw(&yamlbuf, "template/hyper.txt"); err != nil {
+		return err
+	}
+
+	b, err := tpl.ReadFile("template/InstallHyper.txt")
 	if err != nil {
 		return err
 	}
-	h.Selected, err = ExtractRGBA(c.Selected)
+	z1 := ZipConfig{
+		filename: "HowToInstall.txt",
+		data:     b,
+	}
+	z2 := ZipConfig{
+		filename: "HyperJs.txt",
+		data:     yamlbuf.Bytes(),
+	}
+	z, err := Zip(z1, z2)
 	if err != nil {
 		return err
 	}
+
+	w.Header().Set("Content-Disposition", "attachment; filename=colorterm.zip")
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Length", strconv.Itoa(z.Len()))
+
+	if _, err := z.WriteTo(w); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -323,7 +366,11 @@ func SwitchMode(t string, c Colors, w http.ResponseWriter, r *http.Request) erro
 			return err
 		}
 	case "hyper":
-		fmt.Println("hellp")
+		var hyper HyperJs
+		if err := hyper.SendZip(c, w, r); err != nil {
+			fmt.Printf("error on sendzip file hyper : %s", err)
+			return err
+		}
 	}
 	return nil
 }

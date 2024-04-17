@@ -1,0 +1,4 @@
+How to install hyper js theme: 
+A file named ".hyper.js" should be in your ~ : 
+open it with you favorite editor and copy & past the key => value inside this file. 
+if you do not find this file check if if hyperJs is correcly installed.

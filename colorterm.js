@@ -116,13 +116,30 @@ export function colorTerm() {
        */
       const rgbaToString = (rgbaArray) =>
         `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]}, ${rgbaArray[3]})`;
-      return {
-        background: rgbaToString(this.colors[0]),
-        foreground: rgbaToString(this.colors[1]),
-        link: rgbaToString(this.colors[2]),
-        selected: rgbaToString(this.colors[3]),
-        selectedText: rgbaToString(this.colors[4]),
-      };
+      switch (this.generateMethodeValue) {
+        case "iterm":
+          return {
+            background: rgbaToString(this.colors[0]),
+            foreground: rgbaToString(this.colors[1]),
+            link: rgbaToString(this.colors[2]),
+            selected: rgbaToString(this.colors[3]),
+            selectedText: rgbaToString(this.colors[4]),
+          };
+        case "warp":
+          return {
+            background: rgbaToString(this.colors[0]),
+            foreground: rgbaToString(this.colors[1]),
+            link: rgbaToString(this.colors[2]),
+          };
+        case "hyper":
+          return {
+            background: rgbaToString(this.colors[0]),
+            foreground: rgbaToString(this.colors[1]),
+            selected: rgbaToString(this.colors[3]),
+          };
+        default:
+          break;
+      }
     },
 
     /**
@@ -178,7 +195,7 @@ export function colorTerm() {
       this.generateMethodeValue = event;
     },
 
-    generate: async function() {
+    generate: async function () {
       let data = {
         generateMode: this.generateMethodeValue,
         colors: this.colorMapCssRgba,
