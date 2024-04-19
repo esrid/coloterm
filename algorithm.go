@@ -17,6 +17,7 @@ type Colors struct {
 	Link         string `json:"link,omitempty"`
 	Selected     string `json:"selected,omitempty"`
 	SelectedText string `json:"selectedText,omitempty"`
+	Accent       string `json:"accent,omitempty"`
 }
 type ApiCall struct {
 	GenerateMode string `json:"generateMode,omitempty"`
@@ -231,7 +232,7 @@ func (wa *Warp) Convert(c Colors) error {
 		return err
 	}
 	wa.Foreground = RGBAFloatToHex(foreground)
-	accent, err := ExtractRGBA(c.Link)
+	accent, err := ExtractRGBA(c.Accent)
 	if err != nil {
 		return err
 	}

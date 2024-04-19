@@ -2,6 +2,15 @@
 <html lang="en">
 
 <head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8LELS3V19J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8LELS3V19J');
+</script>
   <meta charset="UTF-8" />
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,7 +37,7 @@
   <section @keydown.space="run"
     class="w-screen h-dvh flex flex-col-reverse justify-center items-center gap-3 md:gap-8 md:px-20" id="container-app"
     x-data="app">
-    <div class="flex flex-col px-3 py-3 border-2 border-black md:flex md:flex-row rounded-md gap-3"
+    <form @submit.prevent class="flex flex-col px-3 py-3 border-2 border-black md:flex md:flex-row rounded-md gap-3"
       id="container-bottom">
       <div class="flex flex-col justify-center items-center md:gap-2">
         <label for="colorSelect" class="text-center">Generation algorithms</label>
@@ -44,9 +53,12 @@
       <div class="">
         <ul class="flex flex-col gap-2 md:flex-row flex-wrap justify-center items-center">
           <template x-for="(color, key) in colorMapCssRgba" x-transition>
-            <input x-model="colorMapCssRgba[key]" class="px-3 py-3 rounded-md border-2 text-white"
-              :style="{backgroundColor: color, borderColor:'black'}" x-on:input="updateColor(key, $event.target.value)"
-              data-coloris />
+           <div :id="color" class="flex flex-col-reverse"> 
+             <input x-model="colorMapCssRgba[key]" class="px-3 py-3 rounded-md border-2 text-white"
+               :style="{backgroundColor: color, borderColor:'black'}" x-on:input="updateColor(key, $event.target.value)"
+               data-coloris name="color" id="color" />
+               <label for="color" class="text-black font-bold" x-text="key"></label>
+           </div>
           </template>
         </ul>
       </div>
@@ -62,7 +74,7 @@
           Download
         </button>
       </div>
-    </div>
+    </form>
     <div class="flex justify-center items-center">
       <div class="w-[300px] md:w-[600px] lg:w-[700px]">
         <svg class="w-full h-full" viewBox="0 0 420 253" fill="none" xmlns="http://www.w3.org/2000/svg">

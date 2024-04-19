@@ -129,7 +129,7 @@ export function colorTerm() {
           return {
             background: rgbaToString(this.colors[0]),
             foreground: rgbaToString(this.colors[1]),
-            link: rgbaToString(this.colors[2]),
+            accent: rgbaToString(this.colors[2]),
           };
         case "hyper":
           return {
