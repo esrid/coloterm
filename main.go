@@ -27,6 +27,8 @@ var assets, _ = Assets()
 //go:embed template/*
 var tpl embed.FS
 
+const keyword = "Comment changer sont theme iterm2 ? how to change iterm2 colorscheme ? how to change iterm2 themes ? how to change warp color?, how to change warp terminal colors ? comment changer les couleurs de warp ?  comment changer les couleurs sur iterm2 ? color generateur . color terminal, ansii color terminal. comment changer les couleurs hyperjs? comment changer le theme hyperjs ? terminal color generator, generateur de couleur pour terminal.Theme Customizer,iterm2, warp, warp terminal, hyper, hyperjs, iterm configure, hyper configure, warpconfigure, iterm2 themes, warp terminal, hyper js themes, hyperjs, colorterm, colorterm dev"
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -64,7 +66,8 @@ func GetHome(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if err := t.Execute(w, nil); err != nil {
+	data := map[string]string{"keyword": keyword}
+	if err := t.Execute(w, data); err != nil {
 		return err
 	}
 	return nil

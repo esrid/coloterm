@@ -50,22 +50,30 @@ const CubeHelix = () => {
  * @param {string[]} array
  * @returns {number[][]}
  */
-const RandomColor = (colors = [], MIN_CONTRAST_RATIO = 4.5) => {
+const RandomColor = (colors = [], MIN_CONTRAST_RATIO = 4.5, attempts = 0) => {
   if (colors.length === 5) {
     return colors.map((color) => chroma(color).rgba());
   }
 
   const current = chroma.random();
 
-  const Valid =
+  const isValid =
     colors.length === 0 ||
     chroma.contrast(current, colors[0]) >= MIN_CONTRAST_RATIO;
 
-  if (Valid) {
+  if (isValid) {
     colors.push(current);
+  } else {
+    attempts++;
   }
 
-  return RandomColor(colors, MIN_CONTRAST_RATIO);
+  if (attempts >= 200) {
+    // If none of the colors are valid after 200 attempts, change the first color of the array
+    colors[0] = chroma.random();
+    attempts = 0; // Reset the attempts counter
+  }
+
+  return RandomColor(colors, MIN_CONTRAST_RATIO, attempts);
 };
 
 // MANIPULATE COLOR FUNCTION END
@@ -93,6 +101,8 @@ export function colorTerm() {
 
     changeMode() {
       this.colors = SwitchMode(this.mode);
+      this.historic.push(this.colors);
+      this.position = this.historic.length - 1;
     },
     /**
      * @returns {ColorMap}
@@ -163,19 +173,46 @@ export function colorTerm() {
      * @returns {number|null} Alpha value of the selected color, or null if not found.
      */
     get SelectedAlpha() {
-      const selectedColor = this.colorMapCssRgba.selected;
-      const rgbaValues = selectedColor
-        .split(",")
-        .map((value) => parseFloat(value.trim()));
-      const alpha = rgbaValues.length === 4 ? rgbaValues[3] : null; // Alpha value is the fourth element
-
-      return alpha;
+      let lastPart;
+      if (
+        this.colorMapCssRgba.selected !== undefined ||
+        this.colorMapCssRgba.accent !== undefined
+      ) {
+        if (this.colorMapCssRgba.selected !== undefined) {
+          lastPart = this.colorMapCssRgba.selected;
+        } else {
+          const match = this.colorMapCssRgba.accent.match(
+            /rgba\((\d+), (\d+), (\d+), ([\d.]+)\)/,
+          );
+          if (match) {
+            lastPart = match[4];
+          }
+        }
+      }
+      return lastPart;
     },
 
     /**
      * @type {string} - mode cubix, random
      */
     mode: "",
+
+    historic: [],
+    position: 0, // Start with -1 indicating no navigation has occurred
+    onTheLeft() {
+      console.log(this.position);
+      if (this.position > 0) {
+        this.position--;
+      }
+      console.log(this.historic.at(this.position)); // Update the colors with the historic entry
+    },
+    onTheRight() {
+      if (this.position < this.historic.length - 1) {
+        this.position++;
+      }
+      console.log("Navigation position", this.position);
+      this.colors = this.historic.at(this.position); // Update the colors with the historic entry
+    },
 
     handleChangeSelect(e) {
       this.mode = e;
@@ -195,7 +232,7 @@ export function colorTerm() {
       this.generateMethodeValue = event;
     },
 
-    generate: async function () {
+    generate: async function() {
       let data = {
         generateMode: this.generateMethodeValue,
         colors: this.colorMapCssRgba,

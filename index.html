@@ -3,21 +3,22 @@
 
 <head>
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8LELS3V19J"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-8LELS3V19J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
 
-  gtag('config', 'G-8LELS3V19J');
-</script>
+    gtag("config", "G-8LELS3V19J");
+  </script>
   <meta charset="UTF-8" />
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
     content="colorterm: Transform your terminal with vibrant themes! Don't waste time - let colorterm generate the perfect colors for you! " />
-  <meta name="keywords"
-    content="Color Harmony, Terminal Tints, Code Visualization, Hue Selection, Palette Generator, Theme Customizer, Visual Consistency, Syntax Coloring, Chromatic Expression, Color Composition, Code Theming, Color Wizardry, Palette Perfection, Theme Wizard, Spectrum Selection, Terminal Chroma, Code Colorization, Visual Palette, Chromatic Interface, iTerm2, warp" />
+  <meta name="keywords" content="{{.keyword}}" />
   <meta name="robots" content="index,follow" />
   <meta property="og:title" content="colorterm" />
   <meta property="og:url" content="/" />
@@ -34,9 +35,8 @@
       <span class="font-bold mx-4">colorterm</span>
     </nav>
   </header>
-  <section @keydown.space="run"
-    class="w-screen h-dvh flex flex-col-reverse justify-center items-center gap-3 md:gap-8 md:px-20" id="container-app"
-    x-data="app">
+  <section class="w-screen h-dvh flex flex-col-reverse justify-center items-center gap-3 md:gap-8 md:px-20"
+    id="container-app" x-data="app">
     <form @submit.prevent class="flex flex-col px-3 py-3 border-2 border-black md:flex md:flex-row rounded-md gap-3"
       id="container-bottom">
       <div class="flex flex-col justify-center items-center md:gap-2">
@@ -53,12 +53,12 @@
       <div class="">
         <ul class="flex flex-col gap-2 md:flex-row flex-wrap justify-center items-center">
           <template x-for="(color, key) in colorMapCssRgba" x-transition>
-           <div :id="color" class="flex flex-col-reverse"> 
-             <input x-model="colorMapCssRgba[key]" class="px-3 py-3 rounded-md border-2 text-white"
-               :style="{backgroundColor: color, borderColor:'black'}" x-on:input="updateColor(key, $event.target.value)"
-               data-coloris name="color" id="color" />
-               <label for="color" class="text-black font-bold" x-text="key"></label>
-           </div>
+            <div :id="color" class="flex flex-col-reverse">
+              <input x-model="colorMapCssRgba[key]" class="px-3 py-3 rounded-md border-2 text-white"
+                :style="{backgroundColor: color, borderColor:'black'}"
+                x-on:input="updateColor(key, $event.target.value)" data-coloris name="color" id="color" />
+              <label for="color" class="text-black font-bold" x-text="key"></label>
+            </div>
           </template>
         </ul>
       </div>
@@ -76,6 +76,8 @@
       </div>
     </form>
     <div class="flex justify-center items-center">
+      <button type="button" @click="onTheLeft">Left</button>
+      <button type="button" @click="onTheRight">Right</button>
       <div class="w-[300px] md:w-[600px] lg:w-[700px]">
         <svg class="w-full h-full" viewBox="0 0 420 253" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g filter="url(#filter0_d_7_2)">
@@ -106,7 +108,7 @@
               d="M16.0629 98.3345C16.0608 98.2277 16.0783 98.1271 16.1155 98.0326C16.1527 97.9381 16.2071 97.855 16.2786 97.7833C16.3501 97.7115 16.431 97.6552 16.5214 97.6144C16.6118 97.5735 16.7116 97.5507 16.8209 97.546L20.8943 97.4656L19.7753 96.3937C19.701 96.3249 19.6434 96.2426 19.6024 96.1471C19.5615 96.0515 19.54 95.953 19.538 95.8514C19.5359 95.7447 19.5534 95.644 19.5907 95.5495C19.6279 95.455 19.6822 95.3719 19.7537 95.3002C19.8253 95.2284 19.9062 95.1722 19.9965 95.1313C20.0869 95.0904 20.1867 95.0676 20.296 95.0629C20.3976 95.0609 20.4956 95.0785 20.5901 95.1157C20.6846 95.1529 20.7703 95.2072 20.8473 95.2786L23.2966 97.637C23.3842 97.7212 23.4472 97.8086 23.4854 97.899C23.5236 97.9894 23.544 98.0958 23.5464 98.2181C23.5484 98.3197 23.5281 98.4152 23.4856 98.5046C23.4431 98.594 23.3874 98.6745 23.3185 98.7462L20.9641 101.199C20.8926 101.274 20.8091 101.331 20.7135 101.372C20.6179 101.413 20.5194 101.435 20.4179 101.437C20.3111 101.439 20.2105 101.42 20.1159 101.38C20.0213 101.34 19.9395 101.286 19.8704 101.217C19.8014 101.148 19.7451 101.067 19.7016 100.974C19.6581 100.881 19.6352 100.781 19.6331 100.675C19.6311 100.573 19.6487 100.475 19.6859 100.381C19.7232 100.286 19.7775 100.202 19.849 100.127L20.9248 99.0122L16.8514 99.0925C16.7446 99.0946 16.644 99.0771 16.5495 99.0399C16.455 99.0027 16.3719 98.9483 16.3002 98.8768C16.2284 98.8053 16.1721 98.7243 16.1313 98.634C16.0904 98.5436 16.0676 98.4438 16.0629 98.3345Z"
               fill="#00AF54" />
             <rect width="201" height="15" transform="translate(27 90)" x-show="colorMapCssRgba.selected !== null"
-              :fill="colorMapCssRgba.selected" fill-opacity="0.20" />
+              :fill="colorMapCssRgba.selected || colorMapCssRgba.accent" :fill-opacity="SelectedAlpha" />
             <g filter="url(#filter1_d_7_2)">
               <circle cx="23" cy="20" r="7" fill="#EC4E26" />
               <circle cx="45" cy="20" r="7" fill="#FFD913" />
